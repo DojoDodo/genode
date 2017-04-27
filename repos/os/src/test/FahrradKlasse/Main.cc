@@ -19,26 +19,27 @@ unsigned _Zeit;
 einsatzgebiet Einsatzgebiet;
 schaltung Schaltung;
 bool _Verfuegbar;
-
+char const* _Name_Bike;
 public:
 
-Fahrrad (unsigned gaenge, bool verfuegbar, bool gepaecktraeger,einsatzgebiet eeinsatzgebiet, schaltung sschaltung, char const* besitzer, unsigned zeit)
+Fahrrad (char const* name_bike, unsigned gaenge, bool verfuegbar, bool gepaecktraeger,einsatzgebiet eeinsatzgebiet, schaltung sschaltung, char const* besitzer, unsigned zeit)
 {
 	
 	_Gaenge=gaenge;
 	_Gepaecktraeger=gepaecktraeger;
 	_Besitzer=besitzer;
-    _Zeit=zeit;
+        _Zeit=zeit;
 	Einsatzgebiet=eeinsatzgebiet;
 	Schaltung=sschaltung;
 	_Verfuegbar=verfuegbar;
+        _Name_Bike=name_bike;
 }
 
 
 				
 
 			void print(Output &output) const
-			{Genode::print(output, "Fahrrad: ", _Verfuegbar, _Besitzer, " ", _Zeit, " ", (unsigned)Einsatzgebiet, " ", _Gaenge, " ", (unsigned)Schaltung , " ", _Gepaecktraeger);
+			{Genode::print(output, "Fahrrad: ", _Name_Bike, "Verfügbarkeit: ", _Verfuegbar ? "ist verfügbar" : "ist nicht verfügbar", _Besitzer, " ", _Zeit, " ", (unsigned)Einsatzgebiet, _Gaenge, " ", (unsigned)Schaltung , " ", _Gepaecktraeger);
 			
 		}
 			
@@ -49,15 +50,19 @@ Fahrrad (unsigned gaenge, bool verfuegbar, bool gepaecktraeger,einsatzgebiet eei
 
 
 void Component::construct(Genode::Env &env){
-	
-	Fahrrad Mountainbike (27, false, false, Fahrrad::Wald, Fahrrad::Kettenschaltung, "Martin Stein", 54);
-    Fahrrad Diamant (8, true, true, Fahrrad::Stadt, Fahrrad::Nabenschaltung, "", 0 );
-	Fahrrad BMX (1, false, false, Fahrrad::Stunts, Fahrrad::Singlespeed, "Steve Vai", 234 );
-	Fahrrad Trekking(30, true, true, Fahrrad::Stadt, Fahrrad::Kettenschaltung, "", 0);  
 
+        Fahrrad fahrraeder [4] {            
 	
-	log (Mountainbike);
-	log (Diamant);
-	log (BMX);
-	log (Trekking);
+		{"Mountainbike", 27, false, false, Fahrrad::Wald, Fahrrad::Kettenschaltung, "Martin Stein", 54},
+        	{"Diamant", 8, true, true, Fahrrad::Stadt, Fahrrad::Nabenschaltung, "", 0 },
+        	{"BMX" , 1, false, false, Fahrrad::Stunts, Fahrrad::Singlespeed, "Steve Vai", 234 },
+		{"Trekking", 30, true, true, Fahrrad::Stadt, Fahrrad::Kettenschaltung, "", 0},  
+          
+      		};
+	
+	for (unsigned i=0; i<sizeof(fahrraeder)/sizeof(fahrraeder[0]);i++) {
+	log (fahrraeder [i]);
+	
+	}
+
 }
