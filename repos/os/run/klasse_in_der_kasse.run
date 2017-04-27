@@ -1,0 +1,30 @@
+build "core init test/klasse_in_der_kasse"
+
+create_boot_directory
+
+install_config {
+	<config>
+		<parent-provides>
+			<service name="LOG"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="ROM"/>
+			<service name="RAM"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> </any-service>
+		</default-route>
+		<start name="klasse_in_der_kasse">
+			<resource name="RAM" quantum="10M"/>
+		</start>
+	</config>
+}
+
+build_boot_image "core ld.lib.so init klasse_in_der_kasse"
+
+append qemu_args "-nographic -m 64"
+
+run_genode_until forever
+
+
+
