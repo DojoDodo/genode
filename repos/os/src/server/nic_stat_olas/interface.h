@@ -72,6 +72,7 @@ class Net::Interface
 		void _ack_avail() { }
 		void _ready_to_ack();
 		void _packet_avail() { }
+ 		unsigned _traffic_counter = 0;
 
 	public:
 
