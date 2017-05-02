@@ -1,4 +1,4 @@
-TARGET = nic_dump
+TARGET = nic_stat_olas
 
 LIBS += base net config timeout
 

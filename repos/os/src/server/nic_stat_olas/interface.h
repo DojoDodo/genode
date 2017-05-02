@@ -46,6 +46,10 @@ class Net::Interface
 
 	private:
 
+		using Microseconds = Genode::Timer::Microseconds;
+		
+		
+
 		Genode::Allocator  &_alloc;
 		Pointer<Interface>  _remote;
 		Interface_label     _label;
@@ -72,6 +76,10 @@ class Net::Interface
 		void _ack_avail() { }
 		void _ready_to_ack();
 		void _packet_avail() { }
+ 		unsigned _traffic_counter = 0;
+		void _handle_time_difference (Microseconds now) {log (_label, ": ", _traffic_counter, " Pakete gesendet");}
+		Genode::Periodic_timeout<Interface> _time_difference { _timer, *this, &Interface::_handle_time_difference, Microseconds (1000000) };
+ 	 		
 
 	public:
 

@@ -24,18 +24,22 @@ using namespace Genode;
 void Interface::_handle_eth(void              *const  eth_base,
                             size_t             const  eth_size,
                             Packet_descriptor  const &pkt)
-{
-	try {
-		Ethernet_frame &eth = *new (eth_base) Ethernet_frame(eth_size);
-		Interface &remote = _remote.deref();
-		unsigned new_time = _timer.curr_time().value / 1000;
-		if (_log_time) {
-			log("\033[33m(", remote._label, " <- ", _label, ")\033[0m ", eth,
-			    " \033[33mtime ", new_time, " (", new_time - _curr_time,
-			    ")\033[0m");
-		} else {
-			log("\033[33m(", remote._label, " <- ", _label, ")\033[0m ", eth);
-		}
+{								
+	try {                            								/*Checken ob es ein Ethernet Packet ist*/
+		Ethernet_frame &eth = *new (eth_base) Ethernet_frame(eth_size);       			/*Pointer auf ethernet packet zeigen */
+		Interface &remote = _remote.deref();                                    		/*Gegenüberliegende Interface holen*/
+		unsigned new_time = _timer.curr_time().value / 1000;					/*Zeit auslesen*/
+//		if (_log_time) {                                                                         
+//			log("\033[33m(", remote._label, " <- ", _label, ")\033[0m ", eth,		/*Augabe der ausgelesenen Zeit*/
+//			    " \033[33mtime ", new_time, " (", new_time - _curr_time,
+//			    ")\033[0m");
+//		} else {
+//			log("\033[33m(", remote._label, " <- ", _label, ")\033[0m ", eth);
+//		}
+
+		_traffic_counter = _traffic_counter + 1;
+		
+	
 		_curr_time = new_time;
 		remote._send(eth, eth_size);
 	}
