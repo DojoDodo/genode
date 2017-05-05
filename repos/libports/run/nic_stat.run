@@ -42,7 +42,7 @@ proc gpio_drv_build { } { if {[gpio_drv] != ""} { return drivers/gpio } }
 
 build "core init drivers/timer server/nic_router server/nic_bridge
        test/lwip/http_srv_static test/lwip/http_clnt test/lxip/udp_echo
-       test/lxip/udp_client server/nic_stat_olas [nic_drv_build] [gpio_drv_build]
+       test/lxip/udp_client server/nic_stat [nic_drv_build] [gpio_drv_build]
        [platform_drv_build_components] drivers/framebuffer server/nitpicker
        drivers/input app/pointer"
 
@@ -233,7 +233,7 @@ append config {
 		</config>
 	</start>
 
-	<start name="nic_stat_olas">
+	<start name="nic_stat">
 		<resource name="RAM" quantum="6M"/>
 		<provides><service name="Nic"/></provides>
 		<config uplink="bridge" downlink="router" time="yes"/>
@@ -285,7 +285,7 @@ append config {
 
 		</config>
 		<route>
-			<service name="Nic"> <child name="nic_stat_olas"/> </service>
+			<service name="Nic"> <child name="nic_stat"/> </service>
 			<any-service> <parent/> <any-child/> </any-service>
 		</route>
 	</start>
@@ -294,7 +294,7 @@ append config {
 		<resource name="RAM" quantum="10M"/>
 		<provides><service name="Nic"/></provides>
 		<config>
-			<policy label_prefix="nic_stat_olas"      ip_addr="10.0.2.55"  />
+			<policy label_prefix="nic_stat"      ip_addr="10.0.2.55"  />
 			<policy label_prefix="http_client_1" ip_addr="10.0.2.201" />
 			<policy label_prefix="http_client_2" ip_addr="10.0.2.202" />
 			<policy label_prefix="http_server_3" ip_addr="10.0.2.203" />
@@ -322,7 +322,7 @@ install_config $config
 build_boot_image "
 	core init timer nic_router nic_bridge ld.lib.so libc.lib.so libm.lib.so
 	libc_resolv.lib.so lwip.lib.so lxip.lib.so test-http_clnt
-	test-lwip_httpsrv_static nic_stat_olas test-lxip_udp_echo test-lxip_udp_client
+	test-lwip_httpsrv_static nic_stat test-lxip_udp_echo test-lxip_udp_client
 	nitpicker pointer [nic_drv_binary] [gpio_drv] [platform_drv_boot_modules]
 	[input_drv] [fb_drv]"
 

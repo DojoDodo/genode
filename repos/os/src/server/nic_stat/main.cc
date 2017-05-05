@@ -71,7 +71,7 @@ class Graph : public Nano3d::Scene<Pixel_rgb565>
 		void render(Genode::Surface<Pixel_rgb565> &pixel,
 		            Genode::Surface<Pixel_alpha8> &alpha) override
 		{
-error("HAllo");
+
 			Color const top_color    = Color(10, 10, 10, 20);
 			Color const bottom_color = Color(10, 10, 10, 100);
 			Color const graph_color  = Color(0, 0, 0, 100);
@@ -136,18 +136,21 @@ class Main
                 unsigned   		       _last;
 		float			       _traffic_per_second;
 		unsigned 		       _last2; 			       
-                Nitpicker::Area                _size {400,600}; 
+                Nitpicker::Area                _size {400,150}; 
 		Nitpicker::Point               _pos {0,0};	
-  		unsigned		       _update_rate_ms {1000} ;
-		Graph 			       _graph;
-
+  		unsigned		       _update_rate_ms {1000};
+		Nitpicker::Area		       _size2 {400,150};
+		Nitpicker::Point               _pos2  {0,200};
+		unsigned 		       _update_rate_ms2 {1000};
+		Graph 			       _graph;	       
+		Graph			       _graph2;
 		
 
 	public:
 
 	
 			void _handle_time_difference (Microseconds now) {
-error("time_diff");
+
                         unsigned x=_uplink.traffic_counter ();
 			unsigned y=_uplink.traffic_size ();
 			
@@ -158,8 +161,8 @@ error("time_diff");
 		            y=y+_uplink.remote().deref().traffic_size ();
 			  
 				
-		            _graph.new_data (_traffic_per_second/1000);     
-	
+		            _graph.new_data (_traffic_per_second/2000);     
+			    _graph2.new_data (_difference);	
 			    
 				
 				}
@@ -179,7 +182,7 @@ error("time_diff");
 			
 			}
 
-		Genode::Periodic_timeout<Main> _time_difference { _timer, *this, &Main::_handle_time_difference, Microseconds (1000000)}; 
+		Genode::Periodic_timeout<Main> _time_difference { _timer, *this, &Main::_handle_time_difference, Microseconds (2000000)}; 
 
 	Main(Env &env);
 };
@@ -194,7 +197,8 @@ Main::Main(Env &env)
 	_uplink(env, _config.xml(), _timer, _curr_time, _heap),
 	_root(env.ep(), _heap, _uplink, env.ram(), _config.xml(), _timer,
 	      _curr_time, env.rm()),
-	_graph (env, _heap, _update_rate_ms, _pos, _size) 
+	_graph (env, _heap, _update_rate_ms, _pos, _size),
+	_graph2(env,_heap, _update_rate_ms2, _pos2, _size2) 
 
 {
 	env.parent().announce(env.ep().manage(_root));
