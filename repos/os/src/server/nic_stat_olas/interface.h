@@ -46,8 +46,7 @@ class Net::Interface
 
 	private:
 
-		using Microseconds = Genode::Timer::Microseconds;
-		
+				
 		
 
 		Genode::Allocator  &_alloc;
@@ -56,6 +55,8 @@ class Net::Interface
 		Genode::Timer      &_timer;
 		unsigned           &_curr_time;
 		bool                _log_time;
+		Genode::size_t 	    _traffic_size=0;
+     
 
 		void _send(Ethernet_frame &eth, Genode::size_t const eth_size);
 
@@ -77,9 +78,7 @@ class Net::Interface
 		void _ready_to_ack();
 		void _packet_avail() { }
  		unsigned _traffic_counter = 0;
-		void _handle_time_difference (Microseconds now) {log (_label, ": ", _traffic_counter, " Pakete gesendet");}
-		Genode::Periodic_timeout<Interface> _time_difference { _timer, *this, &Interface::_handle_time_difference, Microseconds (1000000) };
- 	 		
+	 	 		
 
 	public:
 
@@ -88,9 +87,20 @@ class Net::Interface
 		          Genode::Timer      &timer,
 		          unsigned           &curr_time,
 		          bool                log_time,
-		          Genode::Allocator  &alloc);
+		         
+			  Genode::Allocator  &alloc);
+
+                Interface_label label() const {return _label;}
 
 		void remote(Interface &remote) { _remote.set(remote); }
+
+		unsigned traffic_counter () const {return _traffic_counter;}
+
+		Genode::size_t traffic_size () const {return _traffic_size;} 
+		 
+		Pointer<Interface> remote () {return _remote; }      
+
 };
+
 
 #endif /* _INTERFACE_H_ */

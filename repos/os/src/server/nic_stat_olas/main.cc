@@ -16,6 +16,7 @@
 #include <base/heap.h>
 #include <base/attached_rom_dataspace.h>
 #include <timer_session/connection.h>
+#include <os/timeout.h>
 
 /* local includes */
 #include <component.h>
@@ -24,6 +25,7 @@
 using namespace Net;
 using namespace Genode;
 
+using Microseconds = Genode::Timer::Microseconds;
 
 class Main
 {
@@ -36,10 +38,38 @@ class Main
 		Genode::Heap                   _heap;
 		Uplink                         _uplink;
 		Net::Root                      _root;
-
+                unsigned                       _uplink_traffic;
+		float 			       _difference;
+                unsigned   		       _last;
 	public:
 
-		Main(Env &env);
+	
+	
+
+		void _handle_time_difference (Microseconds now) {
+
+                        unsigned x=_uplink.traffic_counter ();
+
+			if ( _uplink.remote().is_set()) {				
+			    x=x+_uplink.remote().deref().traffic_counter ()  
+				;}
+			_difference=x-_last;
+			_last=x;
+			
+
+			log (": ", _uplink.traffic_counter(), " packages sended", "  package size: ", _uplink.traffic_size()/1000, " kb", "   traffic/s: ", _difference);
+		 	 	 		
+				
+
+						
+			
+			}
+
+		Genode::Periodic_timeout<Main> _time_difference { _timer, *this, &Main::_handle_time_difference, Microseconds (1000000)}; 
+
+
+
+	Main(Env &env);
 };
 
 

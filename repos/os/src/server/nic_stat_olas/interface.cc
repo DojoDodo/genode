@@ -1,6 +1,6 @@
 /*
  * \brief  A net interface in form of a signal-driven NIC-packet handler
- * \author Martin Stein
+ * \author Martin Stein, Elias Vahlpahl
  * \date   2017-03-08
  */
 
@@ -37,11 +37,13 @@ void Interface::_handle_eth(void              *const  eth_base,
 //			log("\033[33m(", remote._label, " <- ", _label, ")\033[0m ", eth);
 //		}
 
-		_traffic_counter = _traffic_counter + 1;
-		
 	
 		_curr_time = new_time;
 		remote._send(eth, eth_size);
+
+ 		_traffic_counter = _traffic_counter + 1;
+                _traffic_size = _traffic_size + eth_size;
+
 	}
 	catch (Ethernet_frame::No_ethernet_frame) {
 		error("invalid ethernet frame"); }

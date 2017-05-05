@@ -50,6 +50,8 @@ class Net::Pointer
 		}
 
 		void unset() { _ptr = nullptr; }
+
+		bool is_set() { return _ptr != nullptr; }
 };
 
 #endif /* _POINTER_H_ */

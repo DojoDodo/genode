@@ -112,7 +112,7 @@ void Libc::Component::construct(Libc::Env &env)
 		}
 	}
 
-	for(int j = 0; j != 5; ++j) {
+	while (true) {
 		_timer.msleep(2000);
 
 

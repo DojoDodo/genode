@@ -35,7 +35,7 @@ static void client_loop(Genode::Xml_node config_node, Timer::Connection &timer)
 {
 	int s;
 	log("Start the client loop ...");
-	for(int j = 0; j != 5; ++j) {
+	while(true){
 		timer.msleep(2000);
 		if((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 			error("No socket available!");
