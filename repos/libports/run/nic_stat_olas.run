@@ -19,6 +19,17 @@ proc gpio_drv { } {
 	if {[have_spec gpio]}                   { return gpio_drv }
 }
 
+proc fb_drv { } {
+	if {[have_spec linux]}       { return fb_sdl }
+	if {[have_spec framebuffer]} { return fb_drv }
+}
+
+proc input_drv { } {
+	if {[have_spec ps2]}   { return ps2_drv }
+	if {[need_usb_hid]}    { return usb_drv }
+	if {[have_spec imx53]} { return input_drv }
+}
+
 if {[nic_drv] == ""} {
 	puts "\n Run script is not supported on this platform. \n"; exit 0 }
 
@@ -32,7 +43,8 @@ proc gpio_drv_build { } { if {[gpio_drv] != ""} { return drivers/gpio } }
 build "core init drivers/timer server/nic_router server/nic_bridge
        test/lwip/http_srv_static test/lwip/http_clnt test/lxip/udp_echo
        test/lxip/udp_client server/nic_stat_olas [nic_drv_build] [gpio_drv_build]
-       [platform_drv_build_components]"
+       [platform_drv_build_components] drivers/framebuffer server/nitpicker
+       drivers/input app/pointer"
 
 create_boot_directory
 
@@ -157,17 +169,74 @@ append config {
 
 	} [gpio_drv_config] {
 	} [nic_drv_config] {
-	} [platform_drv_config] {
+	} [platform_drv_config] { }
 
+append_if [have_spec imx53] config {
+	<start name="input_drv">
+		<resource name="RAM" quantum="1M"/>
+		<provides><service name="Input"/></provides>
+		<config/>
+	</start> }
+
+append_if [have_spec ps2] config {
+	<start name="ps2_drv">
+		<resource name="RAM" quantum="1M"/>
+		<provides><service name="Input"/></provides>
+	</start>}
+
+append_if [need_usb_hid] config {
+	<start name="usb_drv">
+		<resource name="RAM" quantum="12M"/>
+		<provides><service name="Input"/></provides>
+		<config ehci="yes" uhci="yes" xhci="no"> <hid/> </config>
+	</start> }
+
+append_if [have_spec sdl] config {
+	<start name="fb_sdl">
+		<resource name="RAM" quantum="4M"/>
+		<provides>
+			<service name="Input"/>
+			<service name="Framebuffer"/>
+		</provides>
+	</start>}
+
+append_if [have_spec framebuffer] config {
+	<start name="fb_drv">
+		<resource name="RAM" quantum="10M"/>
+		<provides><service name="Framebuffer"/></provides>
+		<config buffered="yes" width="800" height="600"/>
+	</start>}
+
+append config {
 	<start name="timer">
 		<resource name="RAM" quantum="1M"/>
 		<provides><service name="Timer"/></provides>
 	</start>
 
+	<start name="pointer">
+		<resource name="RAM" quantum="1M"/>
+		<route>
+			<service name="Nitpicker"> <child name="nitpicker"/> </service>
+			<any-service> <parent/> <any-child/> </any-service>
+		</route>
+	</start>
+
+	<start name="nitpicker">
+		<resource name="RAM" quantum="1M"/>
+		<provides><service name="Nitpicker"/></provides>
+		<config>
+			<domain name="pointer" layer="1" label="no" content="client" origin="pointer" />
+			<domain name="default" layer="2" label="no" content="client" hover="always" />
+
+			<policy label_prefix="pointer" domain="pointer"/>
+			<default-policy domain="default"/>
+		</config>
+	</start>
+
 	<start name="nic_stat_olas">
 		<resource name="RAM" quantum="6M"/>
 		<provides><service name="Nic"/></provides>
-		<config uplink="Du" downlink="Der Typ den du anfragst" time="yes"/>
+		<config uplink="bridge" downlink="router" time="yes"/>
 		<route>
 			<service name="Nic"> <child name="nic_bridge"/> </service>
 			<any-service> <parent/> <any-child/> </any-service>
@@ -254,12 +323,16 @@ build_boot_image "
 	core init timer nic_router nic_bridge ld.lib.so libc.lib.so libm.lib.so
 	libc_resolv.lib.so lwip.lib.so lxip.lib.so test-http_clnt
 	test-lwip_httpsrv_static nic_stat_olas test-lxip_udp_echo test-lxip_udp_client
-	[nic_drv_binary] [gpio_drv] [platform_drv_boot_modules]"
+	nitpicker pointer [nic_drv_binary] [gpio_drv] [platform_drv_boot_modules]
+	[input_drv] [fb_drv]"
+
+# platform-specific modules
+append_platform_drv_boot_modules
 
 proc nic_qemu_args { } {
 	if {[have_spec x86]}     { return "-net nic,model=e1000" }
 	if {[have_spec lan9118]} { return "-net nic,model=lan9118" } }
 
-append qemu_args "-m 384 -nographic -net user -redir udp:5555::1337 [nic_qemu_args]"
+append qemu_args "-m 384 -net user -redir udp:5555::1337 [nic_qemu_args]"
 
-run_genode_until forever
+run_genode_until {.*Test done.*\n.*Test done.*\n} 60
